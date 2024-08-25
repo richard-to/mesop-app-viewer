@@ -2,6 +2,7 @@ import base64
 import os
 import secrets
 import sys
+import logging
 import traceback
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -23,6 +24,11 @@ from mesop.server.static_file_serving import configure_static_file_serving
 
 PAGE_EXPIRATION_MINUTES = 10
 MAIN_MODULE = "main"
+
+RUNNER_TOKEN = os.getenv("MESOP_APP_RUNNER_TOKEN")
+if not RUNNER_TOKEN:
+  logging.fatal("`MESOP_APP_RUNNER_TOKEN` environment variable neeeds to be specified.")
+  sys.exit()
 
 
 @dataclass(frozen=True)
@@ -60,6 +66,9 @@ def create_app(prod_mode: bool, run_block: Callable[..., None] | None = None) ->
   def exec_route():
     global registered_modules
 
+    if request.form.get("token", "") != RUNNER_TOKEN:
+      return "Tokens do not match.", 400
+
     param = request.form.get("code")
     new_module = RegisteredModule()
     if param is None:
@@ -84,7 +93,6 @@ def create_app(prod_mode: bool, run_block: Callable[..., None] | None = None) ->
       # Clean up old registered paths (except main)
       registered_modules_to_delete = set()
       for registered_module in registered_modules:
-        current_registered_module = registered_module
         if (
           registered_module.name != MAIN_MODULE
           and registered_module.created_at
