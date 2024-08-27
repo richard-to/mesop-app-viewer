@@ -21,7 +21,7 @@ It can be started using these commands:
 
 ```shell
 docker stop mesop-app-runner;
-docker rm mesop-app;
+docker rm mesop-app-runner;
 docker build -t mesop-app-runner . && docker run --name mesop-app-runner \
   -e MESOP_APP_RUNNER_TOKEN=your-secret-token \
   -d -p 8080:8080 mesop-app-runner;
