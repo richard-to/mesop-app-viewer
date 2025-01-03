@@ -1,2 +1,2 @@
 gunicorn
-mesop==0.12.4
+mesop==0.14.1
